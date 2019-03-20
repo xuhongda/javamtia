@@ -23,7 +23,7 @@ public class TPBigFileDownloader extends BigFileDownloader {
   final static int N_CPU = Runtime.getRuntime().availableProcessors();
   final ThreadPoolExecutor executor = new ThreadPoolExecutor(2, N_CPU * 2, 4,
       TimeUnit.SECONDS,
-      new ArrayBlockingQueue<Runnable>(N_CPU * 8),
+      new ArrayBlockingQueue<>(N_CPU * 8),
       new ThreadPoolExecutor.CallerRunsPolicy());
 
   public TPBigFileDownloader(String file) throws Exception {
@@ -42,18 +42,15 @@ public class TPBigFileDownloader extends BigFileDownloader {
 
   @Override
   protected void dispatchWork(final DownloadTask dt, int workerIndex) {
-    executor.submit(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          dt.run();
-        } catch (Exception e) {
-          e.printStackTrace();
-          // 任何一个下载子任务出现异常就取消整个下载任务
-          cancelDownload();
-        }
-      }
-    });
+    executor.submit(
+            () -> {
+              try {
+                dt.run();
+              } catch (Exception e) {
+                e.printStackTrace();
+
+              }
+            });
   }
 
   @Override
